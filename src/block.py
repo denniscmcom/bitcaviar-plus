@@ -28,9 +28,21 @@ class Transaction:
     version = int()
     number_of_inputs = int()
     inputs = []
+    number_of_outputs = int()
+    outputs = []
 
-    class Inputs:
-        pass
+    class TransactionInput:
+        id = str()
+        is_coinbase = False
+        vout = int()
+        script_sig_size = int()
+        script_sig = str()
+        sequence = int()
+
+    class TransactionOutput:
+        value = float()
+        script_pub_key_size = int()
+        script_pub_key = str()
 
 
 def read_block(file):
@@ -63,20 +75,25 @@ def read_block(file):
     # Number of transactions (varInt)
     block.number_of_transactions = get_variable_int(file)
 
-    # Compute transaction ID
-    # Get remaining bytes until the end of the block
-    transaction = Transaction()
-    bytes_read = file.tell()
-    whole_block_size = block.size + 8  # Plus magic number and block size
-    transaction_data_size = whole_block_size - bytes_read
-    transaction_data = file.read(transaction_data_size)
-    file.seek(bytes_read)  # Set position to where 'transaction data' starts
-    transaction_id = hashlib.sha256(transaction_data).digest()
-    transaction_id = hashlib.sha256(transaction_id).digest()
-    transaction.id = transaction_id[::-1].hex()
+    for transaction_number in range(block.number_of_transactions):
+        transaction = Transaction()
+        transaction.version = int.from_bytes(read_bytes(file, 4), 'big')
+        transaction.number_of_inputs = get_variable_int(file)
 
-    transaction.version = int.from_bytes(read_bytes(file, 4), 'little')
-    transaction.number_of_inputs = get_variable_int(file)
+        for input_number in range(transaction.number_of_inputs):
+            transaction_input = transaction.TransactionInput()
+            transaction_input.id = read_bytes(file, 32).hex()
+            if transaction_input.id == '0000000000000000000000000000000000000000000000000000000000000000':
+                transaction_input.is_coinbase = True
 
+            transaction_input.vout = int.from_bytes(read_bytes(file, 4), 'little')
+            transaction_input.script_sig_size = get_variable_int(file)
+            transaction_input.script_sig = read_bytes(file, transaction_input.script_sig_size, 'forward').hex()
+            transaction_input.sequence = int.from_bytes(read_bytes(file, 4), 'little')
 
+        transaction.number_of_outputs = get_variable_int(file)
 
+        for output_number in range(transaction.number_of_outputs):
+            transaction_output = transaction.TransactionOutput()
+            transaction_output.value = float.fromhex(read_bytes(file, 8).hex())
+            transaction_output.value /= 100000000  # Satoshis to BTC
