@@ -1,7 +1,6 @@
 class Block:
-    h = str()  # Block hash
+    block_hash = str()  # Block hash
     header = dict()
-    transactions = []
 
 
 class Header:
@@ -14,9 +13,8 @@ class Header:
 
 
 class Transaction:
+    id = str()
     version = int()
-    inputs = []
-    outputs = []
     lock_time = int()
 
 

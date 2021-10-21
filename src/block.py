@@ -1,4 +1,5 @@
-import hashlib
+from src.helpers import __get_hash
+from src.helpers import __get_variable_int
 from src.block_structure import *
 
 
@@ -15,14 +16,19 @@ def read_block(f):
     _ = f.read(4)  # Magic number
     _ = f.read(4)[::-1]  # Block size
     header_bytes = f.read(80)
-    block.h = __get_hash(header_bytes)
+    block.block_hash = __get_hash(header_bytes)
     f.seek(8)
     block.header = __get_header(f)
     number_of_transactions = __get_variable_int(f)
-    for transaction_number in range(number_of_transactions):
-        block.transactions.append(__get_transaction(f))
 
-    return block.__dict__
+    transactions = []
+    for transaction_number in range(number_of_transactions):
+        transactions.append(__get_transaction(f))
+
+    block_dict = block.__dict__
+    block_dict['transactions'] = transactions
+
+    return block_dict
 
 
 def __get_header(f):
@@ -50,77 +56,71 @@ def __get_transaction(f):
     :return: dict
     """
 
+    transaction_data_start = f.tell()
+
     transaction = Transaction()
     transaction.version = int.from_bytes(f.read(4)[::-1], 'big')
     number_of_inputs = __get_variable_int(f)
 
+    inputs = []
     for input_number in range(number_of_inputs):
-        transaction_input = TransactionInput()
-        transaction_input.id = f.read(32)[::-1].hex()
-
-        if transaction_input.id == '0000000000000000000000000000000000000000000000000000000000000000':
-            transaction_input.is_coinbase = True
-
-        transaction_input.vout = int.from_bytes(f.read(4)[::-1], 'little')
-        script_sig_size = __get_variable_int(f)
-        transaction_input.script_sig = f.read(script_sig_size).hex()
-        transaction_input.sequence = int.from_bytes(f.read(4)[::-1], 'little')
-        transaction.inputs.append(transaction_input.__dict__)
+        inputs.append(__get_input(f))
 
     number_of_outputs = __get_variable_int(f)
 
+    outputs = []
     for output_number in range(number_of_outputs):
-        transaction_output = TransactionOutput()
-        transaction_output.value = float.fromhex(f.read(8)[::-1].hex())
-        transaction_output.value /= 100000000  # Satoshis to BTC
-        script_pub_key_size = __get_variable_int(f)
-        transaction_output.script_pub_key = f.read(script_pub_key_size)
-        transaction.outputs.append(transaction_output.__dict__)
+        outputs.append(__get_outputs(f))
 
     transaction.lock_time = int.from_bytes(f.read(4)[::-1], 'little')
 
-    print(transaction.outputs)
-    print(transaction.inputs)
-    print(transaction.__dict__)
+    transaction_dict = transaction.__dict__
+    transaction_dict['inputs'] = inputs
+    transaction_dict['outputs'] = outputs
 
-    return transaction.__dict__
+    transaction_data_end = f.tell()
+
+    # Get transaction id
+    transaction_data_size = transaction_data_end - transaction_data_start
+    f.seek(transaction_data_start)
+    transaction_data = f.read(transaction_data_size)
+    transaction.id = __get_hash(transaction_data)
+
+    return transaction_dict
 
 
-def __get_hash(buffer, bytes_order='backward'):
+def __get_input(buffer):
     """
-    Compute hash from bytes
-    More info about bytes order: https://en.wikipedia.org/wiki/Endianness
+    Get input from transaction data
     :param buffer: bytes, required
-    :param bytes_order: string, 'backward' or 'forward', optional
-    :return: string
+    :return: dict
     """
 
-    h = hashlib.sha256(buffer).digest()
-    h = hashlib.sha256(h).digest()
+    transaction_input = TransactionInput()
+    transaction_input.id = buffer.read(32)[::-1].hex()
 
-    if bytes_order == 'backward':
-        h = h[::-1]
+    if transaction_input.id == '0000000000000000000000000000000000000000000000000000000000000000':
+        transaction_input.is_coinbase = True
 
-    return h.hex()
+    transaction_input.vout = int.from_bytes(buffer.read(4)[::-1], 'little')
+    script_sig_size = __get_variable_int(buffer)
+    transaction_input.script_sig = buffer.read(script_sig_size).hex()
+    transaction_input.sequence = int.from_bytes(buffer.read(4)[::-1], 'little')
+
+    return transaction_input.__dict__
 
 
-def __get_variable_int(f):
+def __get_outputs(buffer):
     """
-    Get variable int from transaction data
-    More info: https://learnmeabitcoin.com/technical/varint
-    :param f: buffer, required
-    :return: int
+    Get output from transaction data
+    :param buffer: bytes, required
+    :return: dict
     """
 
-    first_byte = f.read(1)
+    transaction_output = TransactionOutput()
+    transaction_output.value = float.fromhex(buffer.read(8)[::-1].hex())
+    transaction_output.value /= 100000000  # Satoshis to BTC
+    script_pub_key_size = __get_variable_int(buffer)
+    transaction_output.script_pub_key = buffer.read(script_pub_key_size).hex()
 
-    if first_byte == b'\xfd':
-        variable_int_bytes = f.read(2)[::-1]
-    elif first_byte == b'\xfe':
-        variable_int_bytes = f.read(4)[::-1]
-    elif first_byte == b'\xff':
-        variable_int_bytes = f.read(8)[::-1]
-    else:
-        variable_int_bytes = first_byte
-
-    return int.from_bytes(variable_int_bytes, 'little')
+    return transaction_output.__dict__
