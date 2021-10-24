@@ -1,5 +1,5 @@
 class Block:
-    block_hash = str()  # Block hash
+    block_hash = str()
     header = dict()
 
 

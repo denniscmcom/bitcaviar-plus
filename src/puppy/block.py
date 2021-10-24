@@ -1,6 +1,6 @@
-from src.helpers import __get_hash
-from src.helpers import __get_variable_int
-from src.block_structure import *
+from puppy.helpers import __get_hash
+from puppy.helpers import __get_variable_int
+from puppy.block_structure import *
 
 
 def read_block(f):
@@ -15,9 +15,10 @@ def read_block(f):
     block = Block()
     _ = f.read(4)  # Magic number
     _ = f.read(4)[::-1]  # Block size
+    position_before_header = f.tell()
     header_bytes = f.read(80)
     block.block_hash = __get_hash(header_bytes)
-    f.seek(8)
+    f.seek(position_before_header)
     block.header = __get_header(f)
     number_of_transactions = __get_variable_int(f)
 
@@ -80,7 +81,7 @@ def __get_transaction(f):
 
     transaction_data_end = f.tell()
 
-    # Get transaction id
+    # Get current transaction ID: https://learnmeabitcoin.com/technical/txid
     transaction_data_size = transaction_data_end - transaction_data_start
     f.seek(transaction_data_start)
     transaction_data = f.read(transaction_data_size)

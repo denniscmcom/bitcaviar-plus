@@ -1,13 +1,15 @@
-import json
-from src.block import read_block
+import os
+from src.puppy.block import read_block
 
 
 def main():
-    with open('/Users/dennis/Bitcoin/blocks/blk00000.dat', 'rb') as f:
-        for i in range(1):
+    file_path = '/Users/dennis/Bitcoin/blocks/blk00000.dat'
+
+    with open(file_path, 'rb') as f:
+        number_of_bytes_in_file = os.path.getsize(file_path)
+
+        while f.tell() < number_of_bytes_in_file:
             block = read_block(f)
-            with open('test_block_0.json', 'w') as f_test:
-                json.dump(block, f_test, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':
