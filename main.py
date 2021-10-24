@@ -8,8 +8,14 @@ def main():
     print('File size in bytes: {}'. format(file_size))
 
     with open(filename, 'rb') as f:
+
+        counter = 0
         while f.tell() < file_size:
+            counter += 1
             block = deserialize_block(f)
+            if counter == 3456:
+                print(block)
+                exit()
 
 
 if __name__ == '__main__':

@@ -16,13 +16,13 @@ def deserialize_block(f):
 
     block = Block()
     block.magic_number = f.read(4).hex()
-    block.block_size = f.read(4)[::-1].hex()
-    block_header, block.block_hash = deserialize_header(f)
-    block.number_of_transactions = get_var_int(f)
+    block.size = f.read(4)[::-1].hex()
+    block_header, block.id = deserialize_header(f)
+    block.transaction_count = get_var_int(f)
 
     transactions = []
-    for transaction_number in range(int(block.number_of_transactions, 16)):
-        transactions.append(deserialize_transaction_data(f, block.block_size))
+    for transaction_number in range(int(block.transaction_count, 16)):
+        transactions.append(deserialize_transaction_data(f))
 
     block_dict = block.__dict__
     block_dict['header'] = block_header
@@ -47,7 +47,7 @@ def deserialize_header(f):
 
     header = Header()
     header.version = f.read(4)[::-1].hex()
-    header.previous_block_hash = f.read(32)[::-1].hex()
+    header.previous_block_id = f.read(32)[::-1].hex()
     header.merkle_root = f.read(32)[::-1].hex()
     header.time = f.read(4)[::-1].hex()
     header.bits = f.read(4)[::-1].hex()
@@ -56,23 +56,21 @@ def deserialize_header(f):
     return header.__dict__, block_hash
 
 
-def deserialize_transaction_data(f, block_size):
+def deserialize_transaction_data(f):
     """
     Deserialize transaction data
     More info: https://learnmeabitcoin.com/technical/transaction-data
     :param f: buffer, required
-    :param block_size: string, required
     :return: dict
     """
 
-    start_transaction_data = f.tell()
-
     transaction = Transaction()
+    start_transaction_data = f.tell()
     transaction.version = f.read(4)[::-1].hex()
-    transaction.number_of_inputs = get_var_int(f)
+    transaction.input_count = get_var_int(f)
 
     transaction_inputs = []
-    for input_number in range(int(transaction.number_of_inputs, 16)):
+    for input_number in range(int(transaction.input_count, 16)):
         transaction_input = TransactionInput()
         transaction_input.id = f.read(32)[::-1].hex()
         transaction_input.vout = f.read(4)[::-1].hex()
@@ -81,10 +79,10 @@ def deserialize_transaction_data(f, block_size):
         transaction_input.sequence = f.read(4)[::-1].hex()
         transaction_inputs.append(transaction_input.__dict__)
 
-    transaction.number_of_outputs = get_var_int(f)
+    transaction.output_count = get_var_int(f)
 
     transaction_outputs = []
-    for output_number in range(int(transaction.number_of_outputs, 16)):
+    for output_number in range(int(transaction.output_count, 16)):
         transaction_output = TransactionOutput()
         transaction_output.value = f.read(8)[::-1].hex()
         transaction_output.script_pub_key_size = get_var_int(f)

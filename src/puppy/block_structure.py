@@ -1,13 +1,13 @@
 class Block:
-    block_hash = str()
+    id = str()
     magic_number = str()
-    block_size = str()
-    number_of_transactions = str()
+    size = str()
+    transaction_count = str()
 
 
 class Header:
     version = str()
-    previous_block_hash = str()
+    previous_block_id = str()
     merkle_root = str()
     time = str()
     bits = str()
@@ -17,8 +17,8 @@ class Header:
 class Transaction:
     id = str()
     version = str()
-    number_of_inputs = str()
-    number_of_outputs = str()
+    input_count = str()
+    output_count = str()
     lock_time = str()
 
 
