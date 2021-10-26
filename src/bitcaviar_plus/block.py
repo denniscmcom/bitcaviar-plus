@@ -1,6 +1,6 @@
-from puppy.block_structure import *
-from puppy.helpers import __get_var_int
-from puppy.helpers import __compute_hash
+from bitcaviar_plus.block_structure import *
+from bitcaviar_plus.helpers import __get_var_int
+from bitcaviar_plus.helpers import __compute_hash
 
 """
 Deserialize methods

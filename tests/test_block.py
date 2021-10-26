@@ -1,6 +1,6 @@
 from unittest import TestCase
 from testfixtures import TempDirectory
-from puppy.block import deserialize_block
+from bitcaviar_plus.block import deserialize_block
 
 
 class TestBlock(TestCase):
@@ -60,4 +60,3 @@ class TestBlock(TestCase):
                 self.assertEqual(
                     block, self.expected_genesis_block, 'Genesis block is not equal to expected genesis block'
                 )
-
