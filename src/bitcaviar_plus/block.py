@@ -1,6 +1,7 @@
 from bitcaviar_plus.block_structure import *
 from bitcaviar_plus.helpers import __get_var_int
 from bitcaviar_plus.helpers import __compute_hash
+from bitcaviar_plus.errors import InvalidMagicBytes
 
 """
 Deserialize methods
@@ -16,6 +17,10 @@ def deserialize_block(f):
 
     block = Block()
     block.magic_number = f.read(4).hex()
+
+    if block.magic_number != 'f9beb4d9':
+        raise InvalidMagicBytes(block.magic_number)
+
     block.size = f.read(4)[::-1].hex()
     block_header, block.id = __deserialize_header(f)
     block.transaction_count = __get_var_int(f)
