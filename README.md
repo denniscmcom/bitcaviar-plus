@@ -39,7 +39,10 @@ def parse_entire_blockchain():
         with open(file_name, 'rb') as f:
             file_size = os.path.getsize(file_name)
             while f.tell() < file_size:
-                block = deserialize_block(f)
+                try:
+                    block = deserialize_block(f)
+                except InvalidMagicBytes as e:
+                    print(e)
 ```
 
 ### Example output
