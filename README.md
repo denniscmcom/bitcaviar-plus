@@ -29,6 +29,7 @@ def parse_genesis_block():
 ```python
 import os
 from bitcaviar_plus.block import deserialize_block
+from bitcaviar_plus.errors import InvalidMagicBytes
 
 
 def parse_entire_blockchain():
