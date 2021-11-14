@@ -10,7 +10,7 @@ RUN pip3 install -r requirements.txt
 
 # Copy files
 COPY src/bitcaviar_plus bitcaviar_plus/
-COPY tests/test_app.py .
+COPY tests/implementation_testing.py .
 
 # Run script
-CMD ["python3", "-u", "test_app.py"]
+CMD ["python3", "-u", "implementation_testing.py"]

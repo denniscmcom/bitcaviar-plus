@@ -1,11 +1,12 @@
+
+"""
+Deserialize methods for blocks
+"""
+
 from bitcaviar_plus.block_structure import *
 from bitcaviar_plus.helpers import __get_var_int
 from bitcaviar_plus.helpers import __compute_hash
 from bitcaviar_plus.errors import InvalidMagicBytes
-
-"""
-Deserialize methods
-"""
 
 
 def deserialize_block(f):
