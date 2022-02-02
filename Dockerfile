@@ -13,4 +13,4 @@ COPY . .
 RUN ["python", "setup.py", "install"]
 
 # Test package
-CMD ["python3", "-u", "tests/implementation_testing.py"]
+CMD ["python", "-m", "unittest", "tests.test_implementation"]

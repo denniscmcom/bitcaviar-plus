@@ -5,7 +5,7 @@ Helper methods
 """
 
 
-def __get_var_int(f):
+def get_var_int(f):
     """
     A VarInt (variable integer) is a field used in transaction data to indicate the number of upcoming fields,
     or the length of an upcoming field.
@@ -28,7 +28,7 @@ def __get_var_int(f):
     return number_of_transactions
 
 
-def __compute_hash(data):
+def compute_hash(data):
     """
     Get hash
     :param data: bytes, required

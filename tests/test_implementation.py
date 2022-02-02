@@ -1,18 +1,10 @@
 from unittest import TestCase
-from testfixtures import TempDirectory
 from bitcaviar_plus.block import deserialize_block
+from bitcaviar_plus.errors import InvalidMagicBytes
+from bitcaviar_plus.search import search_block_with
 
 
-class TestBlock(TestCase):
-    genesis_block_hex = """
-    f9beb4d91d0100000100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67
-    768f617fc81bc3888a51323a9fb8aa4b1e5e4a29ab5f49ffff001d1dac2b7c0101000000010000000000000000000000000000000000000000
-    000000000000000000000000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72
-    206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0
-    fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6b
-    f11d5fac00000000
-    """
-
+class TestBlockImplementation(TestCase):
     expected_genesis_block = {
         'magic_number': 'f9beb4d9',
         'size': '0000011d',
@@ -50,13 +42,27 @@ class TestBlock(TestCase):
         }]
     }
 
-    def test_deserialize_block(self):
-        with TempDirectory() as d:
-            test_block_binary = bytes.fromhex(self.genesis_block_hex)
-            d.write('test_block.dat', test_block_binary)
+    def test_parse_genesis_block(self):
+        blk_path = '/bitcoin-node/.bitcoin/blocks/blk00000.dat'
 
-            with open('{}/test_block.dat'.format(d.path), 'rb') as f:
+        with open(blk_path, 'rb') as f:
+            try:
                 block = deserialize_block(f)
                 self.assertEqual(
                     block, self.expected_genesis_block, 'Genesis block is not equal to expected genesis block'
                 )
+            except InvalidMagicBytes as e:
+                self.fail(e)
+
+
+class TestSearchImplementation(TestCase):
+    def test_search_block(self):
+        genesis_block_hash = '000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f'
+        genesis_block = search_block_with(genesis_block_hash)
+        print('---- Genesis block ----')
+        print(genesis_block)
+
+        first_block_hash = '00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048'
+        first_block = search_block_with(first_block_hash)
+        print('---- First block ----')
+        print(first_block)

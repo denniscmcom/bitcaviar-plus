@@ -5,16 +5,27 @@
 
 
 # bitcaviar-plus
+
 A Bitcoin blockchain parser written in Python.
 
 ## Installation
-Clone repository
+
+### Recommended
+
 ```bash
 pip install bitcaviar-plus
 ```
 
+### Manual
+
+```bash
+python setup.py install
+```
+
 ## Usage
-### Deserialize first block from file `blk00000.dat`
+
+### Deserialize Genesis block
+
 ```python
 from bitcaviar_plus.block import deserialize_block
 
@@ -26,6 +37,7 @@ def parse_genesis_block():
 ```
 
 ### Deserialize entire blockchain
+
 ```python
 import os
 from bitcaviar_plus.block import deserialize_block
@@ -47,6 +59,7 @@ def parse_entire_blockchain():
 ```
 
 ### Example output
+
 ```json
 {
   "magic_number":"f9beb4d9",
