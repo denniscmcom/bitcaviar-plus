@@ -4,7 +4,7 @@
 </p>
 
 
-# bitcaviar-plus
+# bitcaviar-plus [DEPRECATED]
 
 A Bitcoin blockchain parser written in Python.
 
